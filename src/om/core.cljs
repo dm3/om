@@ -744,16 +744,16 @@
                         cursor (if (nil? path)
                                  (to-cursor value state [])
                                  (to-cursor (get-in value path) state path))]
-                    (dom/render
-                      (binding [*instrument* instrument
-                                *state*      state]
-                        (build f cursor m))
-                      target)
-                    (let [queue (-get-queue state)]
-                      (when-not (empty? queue)
-                        (doseq [c queue]
-                          (.forceUpdate c))
-                        (-empty-queue! state)))))]
+                    (let [component (binding [*instrument* instrument
+                                              *state*      state]
+                                      (build f cursor m))]
+                      (dom/render component target)
+                      (let [queue (-get-queue state)]
+                        (when-not (empty? queue)
+                          (doseq [c queue]
+                            (.forceUpdate c))
+                          (-empty-queue! state)))
+                      component)))]
       (add-watch state watch-key
         (fn [_ _ _ _]
           (when-not (contains? @refresh-set rootf)
